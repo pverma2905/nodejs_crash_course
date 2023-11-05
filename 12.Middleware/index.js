@@ -1,15 +1,23 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 const fs = require('fs');
 const { v4: uuidv4 } = require("uuid")
 
 app.use(express.json())
+app.use(morgan('dev'))
 
+const middleware1 = require('./middleware/time');
 
+const middleware2 = (req, res, next) => {
+    req.name = "pranav";
+    next()
+}
 
-
+// app.use('/api/notes', [middleware1, middleware2]);
 
 const getNotes = (req, res) => {
+    // console.log("req1", req)
     const tours = JSON.parse(fs.readFileSync(`${__dirname}/notes.json`))
     res.status(200).json({ message: "Success", data: { tours } });
 }
@@ -24,10 +32,10 @@ const createNote = (req, res) => {
         if (err) throw err
         res.status(201).json({ message: 'success', data: { newNote } })
     })
-    // res.send("You can send the post request to this end point")
 }
 
 const getNoteById = (req, res) => {
+    // console.log("req1", req)
     const notes = JSON.parse(fs.readFileSync(`${__dirname}/notes.json`));
     const id = req.params.id;
     console.log("id", id)
@@ -74,7 +82,6 @@ const deleteNote = (req, res) => {
         if (err) throw err;
         res.status(200).json({ message: "Success Note is deleted", data: { notes } })
     })
-
 }
 
 // app.get('/api/notes', getNotes)
@@ -84,7 +91,7 @@ const deleteNote = (req, res) => {
 // app.delete('/api/notes/:id', deleteNote)
 
 app.route('/api/notes').get(getNotes).post(createNote)
-app.route('/api/notes/:id').get(getNoteById).patch(updateNote).delete(deleteNote)
+app.route('/api/notes/:id').get([middleware1, middleware2], getNoteById).patch(updateNote).delete(deleteNote)
 
 app.all('*', (req, res) => {
     res.status(200).send(`<h1>404 | NOT FOUND</h1>`);

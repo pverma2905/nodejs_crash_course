@@ -1,14 +1,14 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 const fs = require('fs');
 const { v4: uuidv4 } = require("uuid")
 
 app.use(express.json())
+app.use(morgan('dev'))
 
 
-
-
-
+// notes routes
 const getNotes = (req, res) => {
     const tours = JSON.parse(fs.readFileSync(`${__dirname}/notes.json`))
     res.status(200).json({ message: "Success", data: { tours } });
@@ -18,13 +18,11 @@ const createNote = (req, res) => {
     const newId = uuidv4();
     const notes = JSON.parse(fs.readFileSync(`${__dirname}/notes.json`));
     const newNote = Object.assign({ _id: newId }, req.body)
-    console.log("mmmmmmm", newNote)
     notes.push(newNote)
     fs.writeFile(`${__dirname}/notes.json`, JSON.stringify(notes), (err) => {
         if (err) throw err
         res.status(201).json({ message: 'success', data: { newNote } })
     })
-    // res.send("You can send the post request to this end point")
 }
 
 const getNoteById = (req, res) => {
@@ -52,8 +50,6 @@ const updateNote = (req, res) => {
         console.log(note[key] + "ccccc" + value)
         note[key] = value
     }
-    console.log("mmmmm", note)
-    console.log("zzz", notes)
     // notes[noteIndex] = note;
     fs.writeFile(`${__dirname}/notes.json`, JSON.stringify(notes), (err) => {
         if (err) throw err;
@@ -74,8 +70,13 @@ const deleteNote = (req, res) => {
         if (err) throw err;
         res.status(200).json({ message: "Success Note is deleted", data: { notes } })
     })
-
 }
+
+const notesRouter = express.Router();
+app.use('/api/notes', notesRouter)
+
+notesRouter.route('/').get(getNotes).post(createNote)
+notesRouter.route('/:id').get(getNoteById).patch(updateNote).delete(deleteNote)
 
 // app.get('/api/notes', getNotes)
 // app.post('/api/notes', createNote)
@@ -83,8 +84,28 @@ const deleteNote = (req, res) => {
 // app.patch('/api/notes/:id', updateNote)
 // app.delete('/api/notes/:id', deleteNote)
 
-app.route('/api/notes').get(getNotes).post(createNote)
-app.route('/api/notes/:id').get(getNoteById).patch(updateNote).delete(deleteNote)
+//user routes
+const getAllUsers = (req, res) => {
+    res.status(500).json({ status: 'error', message: "This route is not yet defined" })
+}
+const createUser = (req, res) => {
+    res.status(500).json({ status: 'error', message: "This route is not yet defined" })
+}
+const getUser = (req, res) => {
+    res.status(500).json({ status: 'error', message: "This route is not yet defined" })
+}
+const updateUser = (req, res) => {
+    res.status(500).json({ status: 'error', message: "This route is not yet defined" })
+}
+const deleteUser = (req, res) => {
+    res.status(500).json({ status: 'error', message: "This route is not yet defined" })
+}
+
+const usersRouter = express.Router();
+app.use('/api/users', usersRouter)
+
+usersRouter.route('/').get(getAllUsers).post(createUser)
+usersRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
 
 app.all('*', (req, res) => {
     res.status(200).send(`<h1>404 | NOT FOUND</h1>`);
